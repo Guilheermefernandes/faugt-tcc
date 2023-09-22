@@ -17,7 +17,8 @@ const schema = new mongoose.Schema({
     describe: String,
     dateCreated: Date,
     permission: Number,
-    type: String
+    type: String,
+    elderly: [String]
 });
 
 const modelName = 'Caregiver';

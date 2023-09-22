@@ -1,6 +1,7 @@
 const { decoded } = require('../middleware/decoded');
 const Caregiver = require('../models/Caregiver');
 const Responsible = require('../models/Responsible');
+const Elderly = require('../models/Elderly');
 
 module.exports = {
     getResponsibles: async (req, res) =>{
@@ -25,47 +26,75 @@ module.exports = {
             return;
         }
 
-        for(let i in user.pendding){
-            if(user.pendding[i].indentifier === indentifier){
+        for(const item of user.pendding){
+            if(item.indentifier === indentifier){
 
-                let caregiver = await Caregiver.findById(user.pendding[i].idCaregiver);
-                let pendding;
+                const caregiver = await Caregiver.findById(item.idCaregiver);
+                if(!caregiver){
+                    return res.status(404).json({ error: 'Cuidador não encontrado!' });
+                }
+                const elderly = await Elderly.findById(user.elderly);
+                if(!elderly){
+                    return res.status(404).json({ error: 'Idoso não encontrado!' });
+                }
+
+                const error = ' Ocorreu um erro no servidor!';
 
                 switch(option){
                     case 'accept':
-                        pendding = caregiver.pendding;
-                        for(let i in pendding){
-                            if(pendding[i].indentifier === indentifier){
-                                pendding[i].status = false;
-                                pendding[i].accept = true;
-                                let elderly = caregiver.elderly;
-                                elderly.push(user.pendding[i].idElderly);
-                                caregiver.pendding[i] = pendding;
-                                caregiver.elderly = elderly;
-                                user.pendding[i].status = false;
-
-                                await user.save();
-                                await caregiver.save();
+                        try{
+                            for(const penddingItem of caregiver.pendding){
+                                if(penddingItem.indentifier === indentifier){
+                                    penddingItem.status = false;
+                                    penddingItem.accept = true;
+                                    elderly.caregiver = caregiver._id;
+                                    caregiver.elderly.push(penddingItem.idElderly);
+                                    item.status = false;
+                                    await Responsible.findOneAndUpdate(
+                                        user._id, {$set: user}
+                                    );
+                                    await Caregiver.findOneAndUpdate(
+                                        caregiver._id, {$set: caregiver}
+                                    );
+                                    await Elderly.findOneAndUpdate(
+                                        elderly._id, {$set: elderly}
+                                    );
+                                    break;
+                                }
                             }
+                        }catch(err){
+                            console.error('Error Accept: ', err);
+                            return res.status(500).json({ error });
                         }
                     break
                     case 'recused':
-                        pendding = caregiver.pendding;
-                        for(let i in pendding){
-                            if(pendding[i].indentifier === indentifier){
-                                pendding[i].status = false;
-                                pendding[i].accept = false;
-                                caregiver.pendding[i] = pendding;
-                                user.pendding[i].status = false
-
-                                await user.save();
-                                await caregiver.save();
+                        try{
+                            for(const penddingItem of caregiver.pendding){
+                                if(penddingItem.indentifier === indentifier){
+                                    penddingItem.status = false;
+                                    penddingItem.accept = false;
+                                    item.status = false;
+                                    await Responsible.findOneAndUpdate(
+                                        user._id, {$set: user}
+                                    );
+                                    await Caregiver.findOneAndUpdate(
+                                        caregiver._id, {$set: caregiver}
+                                    );
+                                    break;
+                                }
                             }
+                        }catch(err){
+                            console.error('Error Recused: ', err);
+                            return res.status(500).json({ error });
                         }
                     break
                 }
 
+                break;
+
             }
         }
+
+        res.status(200).json({ response: true });
     }
 }

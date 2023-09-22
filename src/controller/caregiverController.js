@@ -20,14 +20,16 @@ module.exports = {
             return;
         }
 
-        for(let i in user.pendding){
-            if(user.pendding[i].indentifier === indentifier){
+        for(const item of user.pendding){
+            if(item.indentifier === indentifier){
 
-                const responsible = await Responsible.findById(user.pendding[i].idResponsible);
+                const responsible = await Responsible.findById(item.idResponsible);
                 if(!responsible){
                     res.status(404).json({ error: 'Responsavel não encontrado!' });
                     return
                 }
+
+                const error = 'Erro interno do servidor!';
 
                 switch(option){
                     case 'accept':
@@ -35,15 +37,15 @@ module.exports = {
                             for(const penddingItem of responsible.pendding){
                                 if(penddingItem.indentifier === indentifier){
                                     penddingItem.accept = true;
-                                    console.log(responsible);
-                                    await responsible.save();
-                                    break;
+                                    await Responsible.findOneAndUpdate(
+                                        responsible._id, {$set: responsible}
+                                    );
+                                    break
                                 }
-                            } 
-                        }catch (err){
-                            console.log(err);
-                            res.status(404).json({ error: 'Ocorreu um erro na requisição Accept!' });
-                            return;
+                            }
+                        }catch(err){
+                            console.log('Error Accept: ', err);
+                            return res.status(500).json({ error });
                         }
                     break
                     case 'recused':
@@ -51,16 +53,20 @@ module.exports = {
                             for(const penddingItem of responsible.pendding){
                                 if(penddingItem.indentifier === indentifier){
                                     penddingItem.status = false;
-                                    user.pendding[i].status = false;
-                                    await user.save();
-                                    await responsible.save();
+                                    item.status = false;
+                                    await Caregiver.findOneAndUpdate(
+                                        user._id, {$set: user}
+                                    );
+                                    await Responsible.findOneAndUpdate(
+                                        responsible._id, {$set: responsible}
+                                    );
                                     break;
                                 }
                             } 
                         }catch (err){
-                            console.log(err);
-                            res.status(404).json({ error: 'Ocorreu um erro em sua requisição!' });
-                            return;
+                            console.log('Error Recused: ', err);
+                            return res.status(500).json({ error });
+                            
                         }
                     break
                 }
