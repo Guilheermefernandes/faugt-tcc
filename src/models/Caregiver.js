@@ -18,6 +18,8 @@ const schema = new mongoose.Schema({
     dateCreated: Date,
     permission: Number,
     type: String,
+    disposition: String,
+    evaluation: [Number],
     elderly: [String]
 });
 

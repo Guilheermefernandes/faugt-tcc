@@ -5,6 +5,7 @@ const Elderly = require('../models/Elderly');
 const Caregiver = require('../models/Caregiver');
 const Responsible = require('../models/Responsible');
 const { generateToken } = require('../config/passport');
+const Admim = require('../models/Admim');
 
 module.exports = {
     signin: async (req, res) => {
@@ -134,6 +135,8 @@ module.exports = {
 
         }
 
+        let token;
+
         switch(user.type){
             case 'elderly':
                 user.dateCreated = new Date();
@@ -145,31 +148,73 @@ module.exports = {
                 user.permission = 2
                 const newElderly = new Elderly(user);
                 await newElderly.save();    
+                token = generateToken({ id: newElderly._id, type: newElderly.type });
             break
             case 'responsible':
+                user.questions = false;
                 user.pendding = [];
                 user.dateCreated = new Date();
                 user.elderly = '';
                 user.avatar = '';
                 user.status = true;
-                user.permission = 1
+                user.permission = 1;
                 const newResponsible = new Responsible(user);
-                await newResponsible.save();    
+                await newResponsible.save();
+                token = generateToken({ id: newResponsible._id, type: newResponsible.type });  
             break
             case 'caregiver':
+                user.disposition = '';
                 user.elderly = [];
                 user.pendding = [];
                 user.dateCreated = new Date();
                 user.avatar = '';
                 user.status = true;
                 user.describe = '';
-                user.permission = 1
+                user.permission = 1;
+                user.evaluation = 0;
                 const newCaregiver = new Caregiver(user);
                 await newCaregiver.save();    
+                token = generateToken({ id: newCaregiver._id, type: newCaregiver.type });
             break
         }
 
-        res.json({ response: user });
+        res.status(201).json({ response: true, token, type: user.type });
+
+    },
+    admimSignin: async (req, res) => {
+        const { email, password } = req.body;
+        if(!email || !validator.isEmail(email)){
+            res.status(400).json({ error: 'Email e/ou senha inválidos!' }); 
+            return;
+        }
+        if(!password || password < 10 || password > 16){
+            res.status(400).json({ error: 'Email e/ou senha inválidos!' });
+            return;
+        }
+
+        const admim = await Admim.findOne({ email });
+        if(!admim){
+            res.status(404).json({ error: 'Email e/ou senha inválidos!' });
+            return;
+        }
+
+        const hash = await bcrypt.compare(password, admim.password);
+        if(!hash){
+            res.status(400).json({ error: 'Email e/ou senha inválidos!' });
+            return;
+        }
+
+        if(admim.permission < 3){
+            res.status(403).json({ error: 'Você não possui autorização!' });
+            return;
+        }
+
+        const token = generateToken({ 
+            id: admim._id,
+            type: admim.type
+        });
+
+        res.status(200).json({ token });
 
     }
 }

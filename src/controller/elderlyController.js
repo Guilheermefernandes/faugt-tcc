@@ -12,6 +12,14 @@ module.exports = {
 
         const data = decoded(authorization);
         const user = await Elderly.findById(data.id);
+        if(!user){
+            res.status(404).json({ error: 'Não encontramos seu registro. Tente novamente!' });
+            return;
+        }
+        if(user.responsible !== ''){
+            res.status(403).json({ error: 'Você já possui uma associação!' });
+            return;
+        }
         const responsible = await Responsible.findById(id);
 
         if(!responsible){
@@ -30,7 +38,7 @@ module.exports = {
     },
     like: async (req, res) => {
 
-        const { id } = req.body;
+        const { id } = req.query;
         const { authorization } = req.headers;
         const data = decoded(authorization);
 

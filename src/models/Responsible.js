@@ -17,6 +17,7 @@ const schema = new mongoose.Schema({
     avatar: String,
     status: Boolean,
     permission: Number,
+    questions: Boolean,
     type: String
 });
 

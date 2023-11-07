@@ -4,7 +4,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const router= require('./src/routers/router');
-const { passport } = require('./src/config/passport')
+const { passport } = require('./src/config/passport');
+const path = require('path');
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ server.use(passport.initialize());
 server.use(cors());
 server.use(express.json());
 server.use(express.urlencoded({extended: true}));
-server.use(express.static(__dirname+'./public'));
+server.use(express.static(path.join(__dirname, 'public')));
 server.use(fileupload());
 
 server.use('/', router);

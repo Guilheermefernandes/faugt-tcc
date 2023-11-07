@@ -8,20 +8,33 @@ const elderlyController = require('../controller/elderlyController');
 const adController = require('../controller/adController');
 
 const { passport } = require('../config/passport');
-const { session } = require('passport');
+const { session, authenticate } = require('passport');
 const { verificationPermission } = require('../middleware/permission');
 const caregiverController = require('../controller/caregiverController');
 
-router.get('/ping', (req, res) => {
-    res.json({ response: 'pong' });
-});
+//Rotas padrões
+router.get('/periods', 
+    passport.authenticate('jwt', {session: false}),
+    userController.getPeriod
+);
 
 router.post('/signup', authController.signup);
+router.post('/set/period', 
+    passport.authenticate('jwt', {session: false}),
+    userController.setPeriod
+);
 router.post('/signin', authController.signin);
+router.post('/admim/signin', 
+    authController.admimSignin
+);
 
 router.get('/me/user', 
     passport.authenticate('jwt', {session: false}),
     userController.getUser    
+);
+router.post('/me/user/edit', 
+    passport.authenticate('jwt', {session: false}), 
+    userController.editUser    
 );
 
 router.get('/responsibles', 
@@ -55,6 +68,13 @@ router.post('/send/association/caregiver',
     passport.authenticate('jwt', {session: false}),
     responsibleController.requestForCaregiver
 );
-
-
+router.get('/penddings/responsible', 
+    passport.authenticate('jwt', {session: false}),
+    responsibleController.getPenddings
+);
+router.get('/penddings/caregiver', 
+    passport.authenticate('jwt', {session: false}),
+    caregiverController.getNotificationElderly
+);
+router.get('/logo', userController.getLogo);
 module.exports = router;
