@@ -152,7 +152,7 @@ module.exports = {
             
             const elderly = await Elderly.findById(user.elderly[0]);
             if(!elderly){
-                res.status(200).json({ response: false, error: 'Esse idoso já não existe em nosso sistema!' });
+                res.status(404).json({ response: false, error: 'Esse idoso já não existe em nosso sistema!' });
                 return;
             }
             const responsible = await Responsible.findById(elderly.responsible);
@@ -160,6 +160,7 @@ module.exports = {
             const responsibleForTheElderly = {
                 name: elderly.name,
                 lastName: elderly.lastName,
+                avatar: `${process.env.BASE}/media/${elderly.avatar}`,
                 email: elderly.email,
                 phone: elderly.phone,
                 state: elderly.state,
@@ -170,6 +171,7 @@ module.exports = {
             const dataOfTheElderlyPersonsGuardian = {
                 name: responsible.name,
                 lastName: responsible.lastName,
+                avatar: `${process.env.BASE}/media/${responsible.avatar}`,
                 email: responsible.email,
                 phone: responsible.phone,
                 state: responsible.state,
@@ -177,8 +179,52 @@ module.exports = {
                 neighborhood: responsible.neighborhood
             }
 
-            res.status(200).json({ response: true, responsibleForTheElderly, dataOfTheElderlyPersonsGuardian,association: true});
+            res.status(200).json({ response: true, responsibleForTheElderly, dataOfTheElderlyPersonsGuardian, association: 1});
             return;
+        }
+
+        let idPeriod_MyPeriod = '650f268827e151354b57bbb0';
+        try{
+            idPeriod_MyPeriod = new mongoose.Types.ObjectId(idPeriod_MyPeriod);
+        }catch(e){
+            console.error('Error: ', e);
+            res.status(500).json({ response: false, e });
+            return;
+        }
+
+        if(user.disposition.equals(idPeriod_MyPeriod) && user.elderly.length >= 1){
+            
+            let list = [];
+
+            for(let i in user.elderly){
+                const elderly = await Elderly.findById(user.elderly[i]);
+                if(!elderly){
+                    res.status(404).json({ error: 'Esse idoso já não existe mais em nosso sistema!' });
+                    return
+                }
+
+                const responsible = await Responsible.findById(elderly.responsible);
+
+                list.push({
+                    nameElderly: elderly.name,
+                    lastNameElderly: elderly.lastName,
+                    avatarElderly: elderly.avatar,
+                    emailElderly: elderly.email,
+                    stateElderly: elderly.state,
+                    cityElderly: elderly.city,
+                    neighboorhoodElderly: elderly.neighboorhood,
+                    nameResponsible: responsible.name,
+                    lastNameResponsible: responsible.lastName,
+                    avatarResponsible: responsible.avatar,
+                    emailResponsible: responsible.email,
+                    stateResponsible: responsible.state,
+                    cityResponsible: responsible.city,
+                    neighboorhoodResponsible: responsible.neighboorhood
+                });
+
+            }
+
+            res.status(200).json({ response: true, list, association: 2 });
         }
 
         let penddings = [];
