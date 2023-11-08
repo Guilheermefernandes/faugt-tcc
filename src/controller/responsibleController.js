@@ -3,6 +3,7 @@ const Caregiver = require('../models/Caregiver');
 const Responsible = require('../models/Responsible');
 const Elderly = require('../models/Elderly');
 const Period = require('../models/Period');
+const dotenv = require('dotenv');
 
 const returnUserData = async (type, id) => {
     switch(type){
@@ -39,14 +40,16 @@ module.exports = {
         const { authorization } = req.headers;
         const data = decoded(authorization);
 
+        let icon = `${process.env.BASE}/media/close.png`;
+
         if(data.type !== 'responsible'){
-            res.status(403).json({ error: 'Não foi autorizado a acessar essa rota!' });
+            res.status(403).json({ response: false, error: 'Não foi autorizado a acessar essa rota!', icon });
             return;
         }
 
         const user = await Responsible.findById(data.id);
         if(!user){
-            res.status(404).json({ error: 'Seu usuário não foi encontrado!' });
+            res.status(404).json({ response: false, error: 'Seu usuário não foi encontrado!', icon });
             return;
         }
 
@@ -55,11 +58,11 @@ module.exports = {
 
                 const caregiver = await Caregiver.findById(item.idCaregiver);
                 if(!caregiver){
-                    return res.status(404).json({ error: 'Cuidador não encontrado!' });
+                    return res.status(404).json({ response: false, error: 'Cuidador não encontrado!', icon });
                 }
                 const elderly = await Elderly.findById(user.elderly);
                 if(!elderly){
-                    return res.status(404).json({ error: 'Idoso não encontrado!' });
+                    return res.status(404).json({ response: false, error: 'Idoso não encontrado!', icon });
                 }
 
                 const error = ' Ocorreu um erro no servidor!';
@@ -70,7 +73,7 @@ module.exports = {
                             for(const penddingItem of caregiver.pendding){
                                 if(penddingItem.indentifier === indentifier){
                                     if(caregiver.status === false){
-                                        res.json({ error: 'Este cuidador já possui uma associação!' });
+                                        res.json({ response: false, error: 'Este cuidador já possui uma associação!', icon });
                                         return;
                                     }
 
@@ -116,7 +119,7 @@ module.exports = {
                             }
                         }catch(err){
                             console.error('Error Accept: ', err);
-                            return res.status(500).json({ error });
+                            return res.status(500).json({ response: false, error, icon });
                         }
                     break
                     case 'recused':
@@ -137,7 +140,7 @@ module.exports = {
                             }
                         }catch(err){
                             console.error('Error Recused: ', err);
-                            return res.status(500).json({ error });
+                            return res.status(500).json({ response: false, error, icon });
                         }
                     break
                 }
@@ -147,7 +150,10 @@ module.exports = {
             }
         }
 
-        res.status(200).json({ response: true });
+        const msg = 'Associação realizada com suscesso!';
+        icon = `${process.env.BASE}/media/check.png`;
+
+        res.status(200).json({ response: true, msg, icon });
     },
     getPenddings: async (req, res) => {
         const { authorization } = req.headers;
@@ -201,7 +207,7 @@ module.exports = {
                 indentifier: penddings[i].indentifier,
                 avatarElderly: `http://localhost:5000/media/${elderly.avatar === '' ? 'logo-sistema' : elderly.avatar}`,
                 nameElderly: elderly.name,
-                emailElderly: elderly.email
+                emailElderly: elderly.email,
             });
         }
 

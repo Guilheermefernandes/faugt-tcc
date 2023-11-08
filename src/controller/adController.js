@@ -93,7 +93,8 @@ module.exports = {
             accept: false,
             status: true,
             idElderly: elderly._id,
-            idResponsible: responsible._id
+            idResponsible: responsible._id,
+            underAnalysis: false
         });
         caregiver.pendding = penddingCrgr;
 
@@ -112,21 +113,6 @@ module.exports = {
 
         icon = `${process.env.BASE}/media/check.png`;
 
-        res.json({ response: true, icon});
+        res.json({ response: true, msg: 'Sua solicitação foi feita com susceso!', icon});
     }
 }
-
-/*
-
-cuidador
-
-numero
-id idoso
-id responsavel
-
-responsavel 
-
-numero
-boolean
-id cuidador
-*/
