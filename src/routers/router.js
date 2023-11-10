@@ -72,9 +72,22 @@ router.get('/penddings/responsible',
     passport.authenticate('jwt', {session: false}),
     responsibleController.getPenddings
 );
+
+
 router.get('/penddings/caregiver', 
     passport.authenticate('jwt', {session: false}),
     caregiverController.getNotificationElderly
+);
+router.get('/get/elderly', 
+    passport.authenticate('jwt', {session: false}),
+    userController.getElderly
+);
+
+
+
+router.get('/association/caregiver', 
+    passport.authenticate('jwt', {session: false}),
+    caregiverController.getAssociationCaregiver
 );
 router.get('/logo', userController.getLogo);
 module.exports = router;

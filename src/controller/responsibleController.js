@@ -97,11 +97,33 @@ module.exports = {
 
                                     }
 
-                                    user.pendding.forEach((i) => {
+                                    user.pendding.forEach( async (i) => {
                                         if(i.indentifier !== indentifier){
                                             i.accept = false;
                                             i.status = false;
+
+                                            const currentCaregiver = await Caregiver.findById(i.idCaregiver);
+                                            for(let j in currentCaregiver.pendding){
+                                                if(currentCaregiver.pendding[j].indentifier === i.indentifier){
+                                                    currentCaregiver.pendding[j].accept = false;
+                                                    currentCaregiver.pendding[j].status = false;
+
+                                                    const filter = {
+                                                        _id: currentCaregiver._id
+                                                    };
+
+                                                    await Caregiver.findOneAndUpdate(
+                                                        filter, 
+                                                        {$set: {[`pendding.${j}.accept`]: false,
+                                                            [`pendding.${j}.status`]: false
+                                                        }} 
+                                                    );
+                                                }
+                                            }
+                                            
                                         }
+
+
                                     });
 
                                     await Responsible.findOneAndUpdate(
@@ -205,6 +227,7 @@ module.exports = {
                 neighborhood: caregiver.neighborhood,
                 avatar: `${process.env.BASE}/media/${caregiver.avatar}`,
                 indentifier: penddings[i].indentifier,
+                idElderly: elderly._id,
                 avatarElderly: `http://localhost:5000/media/${elderly.avatar === '' ? 'logo-sistema' : elderly.avatar}`,
                 nameElderly: elderly.name,
                 emailElderly: elderly.email,

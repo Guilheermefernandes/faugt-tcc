@@ -9,6 +9,7 @@ const { default: mongoose } = require('mongoose');
 const Period = require('../models/Period');
 const { v4: uuid } = require('uuid');
 const jimp = require('jimp');
+const bcrypt = require('bcrypt');
 
 dotenv.config();
 
@@ -155,6 +156,38 @@ module.exports = {
 
         res.json({ response: true, type: data.type , user, icons});
     },
+    getElderly: async (req, res) => {
+
+        const { id } = req.query;
+
+        let filters = {};
+
+        if(id){
+            filters._id = id
+        }
+        const elderly = await Elderly.find( filters );
+
+        let list = [];
+
+        for(let i in elderly){
+
+            list.push({
+                id: elderly[i]._id,
+                name: elderly[i].name,
+                lastName: elderly[i].lastName,
+                email: elderly[i].email,
+                phone: elderly[i].phone,
+                state: elderly[i].state,
+                city: elderly[i].city,
+                neighborhood: elderly[i].neighborhood,
+                dateCreated: elderly[i].dateCreated,
+                avatar: `${process.env.BASE}/media/${elderly[i].avatar}`,
+                describe: elderly[i].describe,
+            })
+        }
+
+        res.json({ response: true, list });
+    },
     editUser: async (req, res) => {
         const { authorization } = req.headers;
         const data = decoded(authorization);
@@ -168,6 +201,7 @@ module.exports = {
             'state',
             'city',
             'neighborhood',
+            'password'
         ];
 
         if(req.files && req.files.avatar){
@@ -179,6 +213,11 @@ module.exports = {
 
         for(const field of fieldsToFillIn){
             if(req.body[field]){
+                if(field === 'password'){
+                    const hash = await bcrypt.hash(req.body[field], 10);
+                    filters[field] = hash;
+                    continue;
+                }
                 filters[field] = req.body[field]
             }
         }

@@ -163,7 +163,7 @@ module.exports = {
                 token = generateToken({ id: newResponsible._id, type: newResponsible.type });  
             break
             case 'caregiver':
-                user.disposition = '';
+                user.disposition = '650f265827e151354b57bbaf';
                 user.elderly = [];
                 user.pendding = [];
                 user.dateCreated = new Date();

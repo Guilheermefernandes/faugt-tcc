@@ -18,16 +18,19 @@ module.exports = {
                 
                 if(!user){
                     res.status(404).json({ error: 'Usuario não encontrado!' });
+                    return;
                 }
 
                 if(user.permission >= permission){
                     next();
                 }else{
                     res.status(403).json({ error: 'Você não tem permissão para acessa essa página!' });
+                    return;
                 }
             }catch(err){
                 console.error('Error: ', err);
                 res.status(401).json({ error: 'Token inválido ou não existente!' });
+                return;
             }
         }
     }
