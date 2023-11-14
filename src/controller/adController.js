@@ -79,7 +79,7 @@ module.exports = {
         const responsible = await Responsible.findById(elderly.responsible);
 
         for(let i in caregiver.pendding){
-            if(caregiver.pendding[i].idElderly.equals(elderly._id)){
+            if(caregiver.pendding[i].idElderly.equals(elderly._id) && caregiver.pendding[i].status === true){
                 res.status(404).json({ response: false, error: 'Você já fez uma solicitação para essa pessoa!', icon });
                 return;
             } 

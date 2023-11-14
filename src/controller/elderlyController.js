@@ -60,5 +60,121 @@ module.exports = {
 
         res.json({ response: true });
 
+    },
+    desassociation: async (req, res) => {
+        const { authorization } = req.headers;
+        const data = decoded(authorization);
+
+        let user;
+        try{
+            const id = new mongoose.Types.ObjectId(data.id);
+            user = await Elderly.findById(id);
+            if(!user){
+                res.status(404).json({ response: false, error: 'Ocorreu um erro ao indentificar seu usuario em nosso sistema, tente novamente!' });
+                return;
+            }
+        }catch(e){
+            console.error('Error', e);
+            res.status(500).json({ response: false, error: 'Ocorreu algum erro inesperado!' });
+            return;
+        }
+        
+        if(user.caregiver === ''){
+            res.status(404).json('Você ainda não possui um cuidador!');
+            return;
+        }
+
+
+        let caregiver;
+        try{
+
+            const idCaregiver = new mongoose.Types.ObjectId(user.caregiver);
+            caregiver = await Caregiver.findById(idCaregiver);
+            if(!caregiver){
+                res.status(404).json({ response: false, error: 'Não conseguimos encontrar seu cuidador em nosso sistema! Tente novamete mais tarde.' })
+                return;
+            } 
+
+        }catch(e){
+            console.error('Error', e);
+            res.status(500).json({ response: false, error: 'Ocorreu um erro interno do servidor!' });
+            return
+        }
+
+        for(let i in caregiver.elderly){
+            
+            try{
+
+                const idOfTheTime = new mongoose.Types.ObjectId(caregiver.elderly[i]);
+                if(idOfTheTime.equals(user._id)){
+
+                    try{
+                        await Caregiver.findOneAndUpdate(
+                            { _id: caregiver._id },
+                            {
+                                $pull: {
+                                  elderly: `${user._id}`  
+                                },
+                                $set: {
+                                    status: true
+                                }
+                            },
+                        );
+
+                        await Elderly.findOneAndUpdate(
+                            { _id: user._id },
+                            {
+                                $set: {
+                                    caregiver: ''
+                                }
+                            }
+                        )
+                    }catch(err){
+                        console.error('Error', err);
+                        res.status(500).json({ response: false, error: 'Ocorreu um erro interno no servidor!' });
+                        return;
+                    }
+
+                }
+
+            }catch(e){
+                console.error('Error', err);
+                res.status(500).json({ response: false, error: 'Ocorreu um erro interno no servidor!' });
+                return;
+            }
+
+        }
+
+        res.status(200).json({ response: true, msg: 'Você não possui mais um cuidador!' });
+
+    },
+    endorseCaregiver: async (req, res) => {
+        const { authorization } = req.headers;
+        const { note, idCaregiver } = req.body;
+        const data = decoded(authorization);
+
+        let caregiver;
+        try{
+            const idObject = new mongoose.Types.ObjectId(idCaregiver);
+            caregiver = await Caregiver.findById(idObject);
+        }catch(e){
+            console.error('Error', e);
+            res.status(500).json({ response: false, error: 'Ocorreu um erro interno no sevidor!' });
+            return;
+        }
+
+        let notes = caregiver.evaluation;
+        notes.push(Number(note))
+
+        await Caregiver.findOneAndUpdate(
+            { _id: caregiver._id },
+            {
+                $set: {
+                    evaluation: notes
+                },
+            },
+        );
+
+        res.status(200).json({ response: true, msg: 'Sua nota foi enviada com suscesso!' });
     }
 }

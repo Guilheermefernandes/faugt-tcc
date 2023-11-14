@@ -99,6 +99,21 @@ router.get('/association/responsible',
 );
 
 
+//Desassociation
+
+router.get('/elderly/desassociation',
+    passport.authenticate('jwt', {session: false}),
+    elderlyController.desassociation
+);
+
+
+//Evaluation
+router.post('/evaluation', 
+    passport.authenticate('jwt', {session: false}),
+    verificationPermission(2),
+    elderlyController.endorseCaregiver
+);
+
 //Refatorar
 router.post('/recovery', 
     userController.recovery
