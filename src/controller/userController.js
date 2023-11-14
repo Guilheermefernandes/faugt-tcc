@@ -116,7 +116,8 @@ module.exports = {
                     dateCreated: me.dateCreated,
                     describe: me.describe,
                     avatar: `http://localhost:5000/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
-                    type: me.type
+                    type: me.type,
+                    caregiver: me.caregiver
                 }
             break
             case 'caregiver':
@@ -183,6 +184,38 @@ module.exports = {
                 dateCreated: elderly[i].dateCreated,
                 avatar: `${process.env.BASE}/media/${elderly[i].avatar}`,
                 describe: elderly[i].describe,
+            });
+        }
+
+        res.json({ response: true, list });
+    },
+    getCaregiver: async (req, res) => {
+
+        const { id } = req.query;
+
+        let filters = {};
+
+        if(id){
+            filters._id = id
+        }
+        const caregiver = await Caregiver.find( filters );
+
+        let list = [];
+
+        for(let i in caregiver){
+
+            list.push({
+                id: caregiver[i]._id,
+                name: caregiver[i].name,
+                lastName: caregiver[i].lastName,
+                email: caregiver[i].email,
+                phone: caregiver[i].phone,
+                state: caregiver[i].state,
+                city: caregiver[i].city,
+                neighborhood: caregiver[i].neighborhood,
+                dateCreated: caregiver[i].dateCreated,
+                avatar: `${process.env.BASE}/media/${caregiver[i].avatar}`,
+                describe: caregiver[i].describe,
             })
         }
 
@@ -260,5 +293,23 @@ module.exports = {
         const logo = 'http://localhost:5000/media/methmedic-before.png';
 
         res.status(200).json({logo});
+    },
+    recovery: async (req, res) => {
+        const { id, password} = req.body;
+
+        const user = await Elderly.findById(id);
+        if(!user){
+            res.status(404).json({ error: 'Ocorreu um erro!' });
+            return;
+        }
+
+        const hash = await bcrypt.hash(password, 10);
+
+        filter = {
+            password: hash
+        };
+
+        await Elderly.findOneAndUpdate(user._id, {$set: filter});
+        res.json({ hash });
     }
 }

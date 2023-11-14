@@ -246,6 +246,7 @@ module.exports = {
                     stateElderly: elderly.state,
                     cityElderly: elderly.city,
                     neighboorhoodElderly: elderly.neighboorhood,
+                    describeElderly: elderly.describe,
                     nameResponsible: responsible.name,
                     lastNameResponsible: responsible.lastName,
                     avatarResponsible: `${process.env.BASE}/media/${responsible.avatar}`,
@@ -253,7 +254,7 @@ module.exports = {
                     phoneResponsible: responsible.phone,
                     stateResponsible: responsible.state,
                     cityResponsible: responsible.city,
-                    neighboorhoodResponsible: responsible.neighboorhood
+                    neighboorhoodResponsible: responsible.neighboorhood,
                 });
 
             }

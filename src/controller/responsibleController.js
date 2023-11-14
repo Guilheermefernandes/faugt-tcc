@@ -4,6 +4,7 @@ const Responsible = require('../models/Responsible');
 const Elderly = require('../models/Elderly');
 const Period = require('../models/Period');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
 const returnUserData = async (type, id) => {
     switch(type){
@@ -187,6 +188,25 @@ module.exports = {
             return;
         }
             
+        let elderly;
+        if(user.elderly){
+            try{
+                const id_elderly = new mongoose.Types.ObjectId(user.elderly);
+                elderly = await Elderly.findById(id_elderly);   
+            }catch(e){
+                console.error('Error', e);
+                res.status(500).json({ response: false, error: 'Ocorreu um erro interno no servidor!' });
+                return;
+            }
+        }
+
+        if(!elderly){
+            res.status(404).json({ response: false, error: 'Não encontramos o seu idoso em nosso sistema!'});
+            return;
+        }
+
+        const association = elderly.caregiver !== '' ? true : false;
+
         let penddings = [];
 
         for(let i=0;i<user.pendding.length;i++){
@@ -234,6 +254,62 @@ module.exports = {
             });
         }
 
-        res.status(200).json({list});
+        res.status(200).json({ response: true, list, association });
     },
+    getAssociationResponsible: async (req, res) => {
+        const { authorization } = req.headers;
+        const data = decoded(authorization);
+
+        if(data.type !== 'responsible'){
+            res.status(401).json({ response: false, error: 'Você não possui acesso á essa rota!' });
+            return;
+        }
+
+        const user = await Responsible.findById(data.id);
+        if(!user){
+            res.status(404).json({ response: false, error: 'Não conseguimos encontrar seu usuario em nosso sistema!' });
+            return;
+        }
+    
+        const elderly = await Elderly.findById(user.elderly);
+        if(!elderly){
+            res.status(404).json({ response: false, error: 'Não conseguimos encontrar seu idoso em nosso sistema!' })
+            return;
+        }
+        if(elderly.caregiver === ''){
+            res.status(404).json({ response: false, error: 'Seu idoso não possui um cuidador!' });
+            return;
+        }
+
+        const caregiver = await Caregiver.findById(elderly.caregiver);
+        if(!caregiver){
+            res.status(404).json({ response: false, error: 'Não encontramoso cuidador responsável pelo seu isso!' });
+            return;
+        }
+
+        let list = [];
+
+        list.push({
+            nameElderly: elderly.name,
+            lastNameElderly: elderly.lastName,
+            avatarElderly: `${process.env.BASE}/media/${elderly.avatar}`,
+            emailElderly: elderly.email,
+            phoneElderly: elderly.phone,
+            stateElderly: elderly.state,
+            cityElderly: elderly.city,
+            neighboorhoodElderly: elderly.neighboorhood,
+            describeElderly: elderly.describe,
+            nameResponsible: caregiver.name,
+            lastNameResponsible: caregiver.lastName,
+            avatarResponsible: `${process.env.BASE}/media/${caregiver.avatar}`,
+            emailResponsible: caregiver.email,
+            phoneResponsible: caregiver.phone,
+            stateResponsible: caregiver.state,
+            cityResponsible: caregiver.city,
+            neighboorhoodResponsible: caregiver.neighboorhood,
+        });
+
+
+        res.status(500).json({ response: true, list });
+    }
 }

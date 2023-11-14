@@ -68,26 +68,41 @@ router.post('/send/association/caregiver',
     passport.authenticate('jwt', {session: false}),
     responsibleController.requestForCaregiver
 );
+
+
 router.get('/penddings/responsible', 
     passport.authenticate('jwt', {session: false}),
     responsibleController.getPenddings
 );
-
-
 router.get('/penddings/caregiver', 
     passport.authenticate('jwt', {session: false}),
     caregiverController.getNotificationElderly
 );
+
+
 router.get('/get/elderly', 
     passport.authenticate('jwt', {session: false}),
     userController.getElderly
 );
-
-
+router.get('/get/caregiver', 
+    passport.authenticate('jwt', {session: false}),
+    userController.getCaregiver
+);
 
 router.get('/association/caregiver', 
     passport.authenticate('jwt', {session: false}),
     caregiverController.getAssociationCaregiver
 );
+router.get('/association/responsible', 
+    passport.authenticate('jwt', {session: false}),
+    responsibleController.getAssociationResponsible
+);
+
+
+//Refatorar
+router.post('/recovery', 
+    userController.recovery
+);
+
 router.get('/logo', userController.getLogo);
 module.exports = router;
