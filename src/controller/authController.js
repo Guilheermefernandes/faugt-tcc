@@ -141,6 +141,7 @@ module.exports = {
             case 'elderly':
                 user.dateCreated = new Date();
                 user.like = [];
+                user.evaluation = [];
                 user.responsible = '';
                 user.caregiver = '';
                 user.avatar = '';

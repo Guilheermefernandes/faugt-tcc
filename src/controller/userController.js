@@ -192,6 +192,8 @@ module.exports = {
     getCaregiver: async (req, res) => {
 
         const { id } = req.query;
+        const { authorization } = req.headers;
+        const data = decoded(authorization); 
 
         let filters = {};
 
@@ -203,6 +205,42 @@ module.exports = {
         let list = [];
 
         for(let i in caregiver){
+
+            let qtd = 0;
+            let sum = 0;
+            for(let j in caregiver[i].evaluation){
+                qtd += 1;
+                sum += caregiver[i].evaluation[j];       
+            }
+
+            let evaluation;
+            if(qtd > 1){
+                evaluation = sum / qtd; 
+            }else{
+                evaluation = sum !== null ? sum : 0;
+            }
+
+            const elderly = await Elderly.findById(data.id);
+            if(!elderly){
+                res.status(404).json({response: false, error: 'Ocorreu um erro tente novamente!' });
+                return;
+            }
+
+            let alreadyEvaluated = false;
+            for(let i in elderly.evaluation){
+                
+                try{
+                    const idEvaluation = new mongoose.Types.ObjectId(elderly.evaluation[i]);
+                    if(idEvaluation.equals(caregiver[0]._id)){
+                        alreadyEvaluated = true;
+                    }
+                }catch(e){
+                    console.error('Error', e)
+                    res.status(500).json({ response: false, error: 'Ocorreu um error interno!' });
+                    return;
+                }   
+                
+            }
 
             list.push({
                 id: caregiver[i]._id,
@@ -216,7 +254,9 @@ module.exports = {
                 dateCreated: caregiver[i].dateCreated,
                 avatar: `${process.env.BASE}/media/${caregiver[i].avatar}`,
                 describe: caregiver[i].describe,
-            })
+                evaluation: evaluation,
+                alreadyEvaluated: alreadyEvaluated,
+            });
         }
 
         res.json({ response: true, list });

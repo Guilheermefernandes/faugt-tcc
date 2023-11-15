@@ -153,6 +153,20 @@ module.exports = {
         const { note, idCaregiver } = req.body;
         const data = decoded(authorization);
 
+        let user;
+        try{
+            const idUser = new mongoose.Types.ObjectId(data.id);
+            user = await Elderly.findById(idUser);
+            if(!user){
+                res.status(404).json({ response: true, error: 'Não encontramos seu usuario! Tente novamente.' });
+                return;
+            }
+        }catch(e){
+            console.log('Error', e);
+            res.status(500).json({  });
+            return;
+        }
+
         let caregiver;
         try{
             const idObject = new mongoose.Types.ObjectId(idCaregiver);
@@ -163,6 +177,20 @@ module.exports = {
             return;
         }
 
+        for(let i in user.evaluation){
+            try{
+                const id = new mongoose.Types.ObjectId(user.evaluation[i]);
+                if(id.equals(caregiver._id)){
+                    res.status(404).json({ response: false, error: 'Você já avaliou esse cuidador!' });
+                    return;
+                }
+            }catch(e){
+                console.error('Error', e);
+                res.status(500).json({ response: false, error: 'Ocorreu um erro interno no sevidor!' });
+                return;
+            }
+        }
+
         let notes = caregiver.evaluation;
         notes.push(Number(note))
 
@@ -171,6 +199,18 @@ module.exports = {
             {
                 $set: {
                     evaluation: notes
+                },
+            },
+        );
+
+        let evaluation = user.evaluation;
+        evaluation.push(caregiver._id);
+
+        await Elderly.findOneAndUpdate(
+            { _id: user._id },
+            {
+                $set: {
+                    evaluation: evaluation
                 },
             },
         );

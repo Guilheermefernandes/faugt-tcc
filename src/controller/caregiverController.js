@@ -168,7 +168,7 @@ module.exports = {
                 avatar: `${process.env.BASE}/media/${responsible.avatar === '' ? 'logo-sistema' : responsible.avatar}`,
                 indentifier: penddings[i].indentifier,
                 idElderly: elderly._id,
-                avatarElderly: `http://localhost:5000/media/${elderly.avatar === '' ? 'logo-sistema' : elderly.avatar}`,
+                avatarElderly: `${process.env.BASE}/media/${elderly.avatar === '' ? 'logo-sistema' : elderly.avatar}`,
                 nameElderly: elderly.name,
                 emailElderly: elderly.email,
                 inAnalysis: penddings[i].underAnalysis

@@ -18,6 +18,7 @@ const schema = new mongoose.Schema({
     avatar: String,
     describe: String,
     permission: Number,
+    evaluation: [String],
     type: String
 });
 
