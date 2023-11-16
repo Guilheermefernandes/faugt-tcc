@@ -6,6 +6,8 @@ const Period = require('../models/Period');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
+dotenv.config();
+
 const returnUserData = async (type, id) => {
     switch(type){
         case 'elderly':
@@ -31,7 +33,7 @@ module.exports = {
         let responsibles = await Responsible.find({ status });
 
         for(let i in responsibles){
-            responsibles[i].avatar = `http://localhost:5000/media/${responsibles[i].avatar}`
+            responsibles[i].avatar = `${process.env.BASE}/media/${responsibles[i].avatar}`
         }
 
         res.json({ response: true, responsibles, userName: user.name, lastName: user.lastName});
@@ -248,7 +250,7 @@ module.exports = {
                 avatar: `${process.env.BASE}/media/${caregiver.avatar}`,
                 indentifier: penddings[i].indentifier,
                 idElderly: elderly._id,
-                avatarElderly: `http://localhost:5000/media/${elderly.avatar === '' ? 'logo-sistema' : elderly.avatar}`,
+                avatarElderly: `${process.env.BASE}/media/${elderly.avatar === '' ? 'logo-sistema' : elderly.avatar}`,
                 nameElderly: elderly.name,
                 emailElderly: elderly.email,
             });

@@ -115,7 +115,7 @@ module.exports = {
                     neighborhood: me.neighborhood,
                     dateCreated: me.dateCreated,
                     describe: me.describe,
-                    avatar: `http://localhost:5000/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
+                    avatar: `${process.env.BASE}/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
                     type: me.type,
                     caregiver: me.caregiver
                 }
@@ -131,7 +131,7 @@ module.exports = {
                     neighborhood: me.neighborhood,
                     dateCreated: me.dateCreated,
                     describe: me.describe,
-                    avatar: `http://localhost:5000/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
+                    avatar: `${process.env.BASE}/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
                     type: me.type
                 }
             break
@@ -145,14 +145,14 @@ module.exports = {
                     city: me.city,
                     neighborhood: me.neighborhood,
                     dateCreated: me.dateCreated,
-                    avatar: `http://localhost:5000/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
+                    avatar: `${process.env.BASE}/media/${me.avatar === '' ? 'logo-sistema.jpeg' : me.avatar}`,
                     type: me.type
                 }    
             break
         }
 
         const icons = {
-            exit: `http://localhost:5000/media/logout.png`
+            exit: `${process.env.BASE}/media/logout.png`
         };
 
         res.json({ response: true, type: data.type , user, icons});
@@ -330,7 +330,7 @@ module.exports = {
     },
     getLogo: (req, res) => {
 
-        const logo = 'http://localhost:5000/media/methmedic-before.png';
+        const logo = `${process.env.BASE}/media/methmedic-before.png`;
 
         res.status(200).json({logo});
     },
